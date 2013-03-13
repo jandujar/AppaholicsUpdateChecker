@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -18,14 +21,15 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
-
+import android.os.AsyncTask;
 /**
  * @author Raghav Sood
+ * @author Kennedy Skelton
  * @version API 2
  * @since API 1
  */
 
-public class UpdateChecker {
+public class UpdateChecker extends Observable {
 
 	private String TAG = "UpdateChecker";
 	private boolean updateAvailable = false;
@@ -33,6 +37,39 @@ public class UpdateChecker {
 	private boolean haveValidContext = false;
 	private boolean useToasts = false;
 	private DownloadManager downloadManager;
+
+
+	/** AsyncTask for checking the version number in the background.
+	  * Prevents slow or faulty network connections from slowing the application 
+	  * down while the connection times out.
+	  */
+	private class CheckVersionTask extends AsyncTask<String,Void,Boolean>{
+		public Boolean doInBackground(String...params) {
+			try {
+				String url = params[0];
+				int readCode = 0;
+				int versionCode = getVersionCode();
+
+				readCode = Integer.parseInt(readFile(url));
+				// Check if update is available.
+				if (readCode > versionCode) {
+					return true;
+				}	
+			} catch (NumberFormatException e) {
+				Log.e(TAG, "Invalid number online"); //Something wrong with the file content
+			}
+
+			return false;
+		}
+
+		public void onPostExecute(Boolean result) {
+			// Notify any observers that an update is available
+			updateAvailable = result;
+			setChanged();
+			notifyObservers();
+		}
+	};
+
 
 	/**
 	 * Constructor that only takes the Activity context.
@@ -64,7 +101,9 @@ public class UpdateChecker {
 			haveValidContext = true;
 			useToasts = toasts;
 		}
+
 	}
+
 
 	/**
 	 * Checks for app update by version code.
@@ -75,23 +114,13 @@ public class UpdateChecker {
 	 * @param url URL at which the text file containing your latest version code is located.
 	 * @since API 1
 	 */
-	public void checkForUpdateByVersionCode(String url) {
+	public void checkForUpdateByVersionCode(final String url) {
 		if(isOnline())
 		{
 			if (haveValidContext) {
-				int versionCode = getVersionCode();
-				int readCode = 0;
+				final int versionCode = getVersionCode();
 				if (versionCode >= 0) {
-					try {
-						readCode = Integer.parseInt(readFile(url));
-						// Check if update is available.
-						if (readCode > versionCode) {
-							updateAvailable = true; //We have an update available
-						}
-					} catch (NumberFormatException e) {
-						Log.e(TAG, "Invalid number online"); //Something wrong with the file content
-					}
-				
+					new CheckVersionTask().execute(url);
 				} else {
 					Log.e(TAG, "Invalid version code in app"); //Invalid version code
 				}
@@ -105,6 +134,7 @@ public class UpdateChecker {
 			}
 		}
 	}
+
 
 	/**
 	 * Get's the version code of your app by the context passed in the constructor
@@ -292,4 +322,7 @@ public class UpdateChecker {
 		Log.e(TAG, "There was an error reading the file");
 		return "Problem reading the file";
 	}
+
+
+
 }

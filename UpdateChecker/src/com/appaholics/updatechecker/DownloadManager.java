@@ -110,7 +110,7 @@ public class DownloadManager extends AsyncTask<String, Integer, String>
     			output.close();
     			input.close();
            	} catch (IOException e) {
-           		Log.e(TAG, "There was an IOException when downloading the update file");
+           		Log.e(TAG, "There was an IOException when downloading the update file",e);
            	}
     	}
     	return null;
