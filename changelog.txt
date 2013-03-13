@@ -12,3 +12,10 @@ Launch app's page on Google Play
 Install and download separately
 Optional toast notifications
 Better handling for when user is offline
+
+
+API Version 2.1
+
+Fixes:
+Version checking is now done in the background
+UpdateChecker implements Observable pattern to support this

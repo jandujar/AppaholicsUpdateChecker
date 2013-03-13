@@ -25,7 +25,7 @@ import android.os.AsyncTask;
 /**
  * @author Raghav Sood
  * @author Kennedy Skelton
- * @version API 2
+ * @version API 2.1
  * @since API 1
  */
 
@@ -42,8 +42,12 @@ public class UpdateChecker extends Observable {
 	/** AsyncTask for checking the version number in the background.
 	  * Prevents slow or faulty network connections from slowing the application 
 	  * down while the connection times out.
+      *
+	  * @author Kiirani 
+	  * @since API 2.1
 	  */
-	private class CheckVersionTask extends AsyncTask<String,Void,Boolean>{
+	private class CheckVersionTask extends AsyncTask<String,Void,Boolean>
+	{
 		public Boolean doInBackground(String...params) {
 			try {
 				String url = params[0];

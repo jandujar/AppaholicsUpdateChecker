@@ -22,7 +22,7 @@ import android.util.Log;
  * DO NOT USE ON YOUR OWN. All calls are handled through UpdateChecker.
  * 
  * @author Raghav Sood
- * @version API 2
+ * @version API 2.1
  * @since API 1
  *
  */
