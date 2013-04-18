@@ -19,3 +19,11 @@ API Version 2.1
 Fixes:
 Version checking is now done in the background
 UpdateChecker implements Observable pattern to support this
+
+
+API Version 2.2
+
+Fixes:
+State of external storage is checked before downloading
+APK is downloaded to app specific directory on external storage
+Where exceptions are logged, the exception objects are now passed along as well
