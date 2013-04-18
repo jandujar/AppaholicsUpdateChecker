@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
@@ -22,7 +23,8 @@ import android.util.Log;
  * DO NOT USE ON YOUR OWN. All calls are handled through UpdateChecker.
  * 
  * @author Raghav Sood
- * @version API 2.1
+ * @author Kennedy Skelton
+ * @version API 2.2
  * @since API 1
  *
  */
@@ -33,7 +35,8 @@ public class DownloadManager extends AsyncTask<String, Integer, String>
     private boolean installAfterDownload = true;
     private boolean downloaded = false;
     private Context mContext;
-    
+    private static String FILENAME ="/appupdate.apk";
+
     /**
      * Constructor for the Download Manager. DO NOT USE ON YOUR OWN. All calls are through UpdateChecker
      * 
@@ -93,8 +96,9 @@ public class DownloadManager extends AsyncTask<String, Integer, String>
     			int fileLength = connection.getContentLength();
     			
     			// download the file
+
     			InputStream input = new BufferedInputStream(url.openStream());
-    			OutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/appupdate.apk");
+    			OutputStream output = new FileOutputStream(getAppDirectory()+FILENAME);
     			
     			byte data[] = new byte[1024];
     			long total = 0;
@@ -114,6 +118,30 @@ public class DownloadManager extends AsyncTask<String, Integer, String>
            	}
     	}
     	return null;
+    }
+
+    /** 
+      * Helper method to get the correct external storage location for this 
+      * application. 
+      * Path is acquired differently for API < 8 vs API >= 8.
+      * @return The correct path as a string.
+      * @since API 2.2
+      */
+    private String getAppDirectory() {
+        String path;
+
+        if(Build.VERSION.SDK_INT < 8) {
+            String appPackage = mContext.getClass().getPackage().getName();
+            String storagePath = Environment.getExternalStorageDirectory().getPath();
+
+            path = storagePath+"/Android/data/"+appPackage+"/files";
+        }
+        else {
+            path = mContext.getExternalFilesDir(null).getPath();
+        }
+
+        Log.d(TAG,"APK will be stored under "+path);
+        return path;
     }
 
     /**
@@ -167,7 +195,7 @@ public class DownloadManager extends AsyncTask<String, Integer, String>
     {
     	if(downloaded)
     	{
-    		String filepath = Environment.getExternalStorageDirectory().getPath() + "/appupdate.apk";
+    		String filepath = getAppDirectory()+FILENAME;
         	Uri fileLoc = Uri.fromFile(new File(filepath));
         	Intent intent = new Intent(Intent.ACTION_VIEW);
         	intent.setDataAndType(fileLoc, "application/vnd.android.package-archive");
