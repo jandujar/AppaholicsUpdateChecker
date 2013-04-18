@@ -22,10 +22,12 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 import android.os.AsyncTask;
+import android.os.Environment;
+
 /**
  * @author Raghav Sood
  * @author Kennedy Skelton
- * @version API 2.1
+ * @version API 2.2
  * @since API 1
  */
 
@@ -169,28 +171,9 @@ public class UpdateChecker extends Observable {
 	 */
 	public void downloadAndInstall(String apkUrl)
 	{
-		if(isOnline())
-		{
-			downloadManager = new DownloadManager(mContext, true);
-			downloadManager.execute(apkUrl);
-		}
-		else {
-			if(useToasts)
-			{
-				makeToastFromString("App update failed. No internet connection available").show();
-			}
-		}
+		download(apkUrl,true);
 	}
-	
-	/**
-	 * Must be called only after download(). 
-	 * @since API 2
-	 * @throws NullPointerException Thrown when download() hasn't been called.
-	 */
-	public void install()
-	{
-		downloadManager.install();
-	}
+
 	
 	/**
 	 * Downloads the update apk, but does not install it
@@ -200,16 +183,47 @@ public class UpdateChecker extends Observable {
 	 */
 	public void download(String apkUrl)
 	{
-		if(isOnline())
+		download(apkUrl,false);
+	}
+
+
+	/** 
+	  * Helper method to run the DownloadManager task after checking network
+	  * and storage states.
+	  * @param apkUrl URL at which the update is located
+	  * @param install Whether or not to install the APK after downloading
+	  * @since API 2.2
+	  */
+	private void download(String apkUrl,boolean install) {
+		String storageState = Environment.getExternalStorageState();
+		Log.d(TAG,"Storage state: "+storageState+" -- we want "+Environment.MEDIA_MOUNTED);
+
+		if(!isOnline())
 		{
-		downloadManager = new DownloadManager(mContext, false);
-		downloadManager.execute(apkUrl);
-		} else {
 			if(useToasts)
-			{
 				makeToastFromString("App update failed. No internet connection available").show();
-			}
 		}
+		else if(!Environment.MEDIA_MOUNTED.equals(storageState))
+		{
+			if(useToasts)
+				makeToastFromString("App update failed. External storage not available").show();
+		}
+		else  // We're online, and storage is available
+		{
+			downloadManager = new DownloadManager(mContext, install);
+			downloadManager.execute(apkUrl);
+		}
+	}
+
+
+	/**
+	 * Must be called only after download(). 
+	 * @since API 2
+	 * @throws NullPointerException Thrown when download() hasn't been called.
+	 */
+	public void install()
+	{
+		downloadManager.install();
 	}
 	
 	/**
