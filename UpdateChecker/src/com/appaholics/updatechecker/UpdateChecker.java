@@ -62,7 +62,7 @@ public class UpdateChecker extends Observable {
 					return true;
 				}	
 			} catch (NumberFormatException e) {
-				Log.e(TAG, "Invalid number online"); //Something wrong with the file content
+				Log.e(TAG, "Invalid number online",e); //Something wrong with the file content
 			}
 
 			return false;
@@ -155,9 +155,9 @@ public class UpdateChecker extends Observable {
 					mContext.getPackageName(), 0).versionCode;
 			return code; // Found the code!
 		} catch (NameNotFoundException e) {
-			Log.e(TAG, "Version Code not available"); // There was a problem with the code retrieval.
+			Log.e(TAG, "Version Code not available",e); // There was a problem with the code retrieval.
 		} catch (NullPointerException e) {
-			Log.e(TAG, "Context is null");
+			Log.e(TAG, "Context is null",e);
 		}
 
 		return -1; // There was a problem.
@@ -332,9 +332,9 @@ public class UpdateChecker extends Observable {
 			result = bufferedReader.readLine();
 			return result;
 		} catch (MalformedURLException e) {
-			Log.e(TAG, "Invalid URL");
+			Log.e(TAG, "Invalid URL",e);
 		} catch (IOException e) {
-			Log.e(TAG, "There was an IO exception");
+			Log.e(TAG, "There was an IO exception",e);
 		}
 		
 		Log.e(TAG, "There was an error reading the file");
